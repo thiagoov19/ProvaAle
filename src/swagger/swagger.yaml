@@ -1,0 +1,431 @@
+openapi: 3.0.3
+info:
+  title: Biblioteca API
+  description: API REST para gerenciamento de acervo bibliográfico
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:8080
+    description: Ambiente local via Nginx
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    LoginInput:
+      type: object
+      required: [email, password]
+      properties:
+        email: { type: string, example: admin@biblioteca.local }
+        password: { type: string, example: "123456" }
+
+    User:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        email: { type: string }
+        created_at: { type: string, format: date-time }
+
+    UserInput:
+      type: object
+      required: [name, email, password]
+      properties:
+        name: { type: string, example: João Silva }
+        email: { type: string, example: joao@exemplo.com }
+        password: { type: string, example: senha123 }
+
+    Category:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        description: { type: string }
+
+    CategoryInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, example: Romance }
+        description: { type: string, example: Narrativas ficcionais }
+
+    Author:
+      type: object
+      properties:
+        id: { type: integer }
+        name: { type: string }
+        nationality: { type: string }
+        birth_year: { type: integer }
+
+    AuthorInput:
+      type: object
+      required: [name]
+      properties:
+        name: { type: string, example: Machado de Assis }
+        nationality: { type: string, example: Brasileiro }
+        birth_year: { type: integer, example: 1839 }
+
+    Book:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        isbn: { type: string }
+        publication_year: { type: integer }
+        category_id: { type: integer }
+
+    BookInput:
+      type: object
+      required: [title, category_id]
+      properties:
+        title: { type: string, example: Dom Casmurro }
+        isbn: { type: string, example: "9788535911756" }
+        publication_year: { type: integer, example: 1899 }
+        category_id: { type: integer, example: 1 }
+
+security:
+  - bearerAuth: []
+
+paths:
+  /login:
+    post:
+      tags: [Auth]
+      summary: Gerar token JWT
+      security: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/LoginInput' }
+      responses:
+        200:
+          description: Token gerado
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+        401:
+          description: Credenciais inválidas
+
+  /users:
+    get:
+      tags: [Users]
+      summary: Listar usuários
+      responses:
+        200:
+          description: Lista de usuários
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/User' }
+        401:
+          description: Não autorizado
+    post:
+      tags: [Users]
+      summary: Criar usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserInput' }
+      responses:
+        201:
+          description: Usuário criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        400:
+          description: Dados inválidos
+        409:
+          description: Email já cadastrado
+
+  /users/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Users]
+      summary: Buscar usuário por ID
+      responses:
+        200:
+          description: Usuário encontrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        404:
+          description: Não encontrado
+    put:
+      tags: [Users]
+      summary: Atualizar usuário
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/UserInput' }
+      responses:
+        200:
+          description: Usuário atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/User' }
+        404:
+          description: Não encontrado
+    delete:
+      tags: [Users]
+      summary: Deletar usuário
+      responses:
+        204:
+          description: Deletado
+        404:
+          description: Não encontrado
+
+  /categories:
+    get:
+      tags: [Categories]
+      summary: Listar categorias
+      responses:
+        200:
+          description: Lista
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Category' }
+    post:
+      tags: [Categories]
+      summary: Criar categoria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryInput' }
+      responses:
+        201:
+          description: Criada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+
+  /categories/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Categories]
+      summary: Buscar categoria por ID
+      responses:
+        200:
+          description: Encontrada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+        404:
+          description: Não encontrada
+    put:
+      tags: [Categories]
+      summary: Atualizar categoria
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/CategoryInput' }
+      responses:
+        200:
+          description: Atualizada
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Category' }
+    delete:
+      tags: [Categories]
+      summary: Deletar categoria
+      responses:
+        204:
+          description: Deletada
+
+  /authors:
+    get:
+      tags: [Authors]
+      summary: Listar autores
+      responses:
+        200:
+          description: Lista
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Author' }
+    post:
+      tags: [Authors]
+      summary: Criar autor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthorInput' }
+      responses:
+        201:
+          description: Criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Author' }
+
+  /authors/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Authors]
+      summary: Buscar autor por ID
+      responses:
+        200:
+          description: Encontrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Author' }
+        404:
+          description: Não encontrado
+    put:
+      tags: [Authors]
+      summary: Atualizar autor
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/AuthorInput' }
+      responses:
+        200:
+          description: Atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Author' }
+    delete:
+      tags: [Authors]
+      summary: Deletar autor
+      responses:
+        204:
+          description: Deletado
+
+  /books:
+    get:
+      tags: [Books]
+      summary: Listar livros
+      responses:
+        200:
+          description: Lista
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Book' }
+    post:
+      tags: [Books]
+      summary: Criar livro
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BookInput' }
+      responses:
+        201:
+          description: Criado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Book' }
+
+  /books/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [Books]
+      summary: Buscar livro por ID
+      responses:
+        200:
+          description: Encontrado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Book' }
+        404:
+          description: Não encontrado
+    put:
+      tags: [Books]
+      summary: Atualizar livro
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/BookInput' }
+      responses:
+        200:
+          description: Atualizado
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Book' }
+    delete:
+      tags: [Books]
+      summary: Deletar livro
+      responses:
+        204:
+          description: Deletado
+
+  /books/{bookId}/authors:
+    parameters:
+      - name: bookId
+        in: path
+        required: true
+        schema: { type: integer }
+    get:
+      tags: [BookAuthors]
+      summary: Listar autores de um livro
+      responses:
+        200:
+          description: Lista de autores
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Author' }
+        404:
+          description: Livro não encontrado
+
+  /books/{bookId}/authors/{authorId}:
+    parameters:
+      - name: bookId
+        in: path
+        required: true
+        schema: { type: integer }
+      - name: authorId
+        in: path
+        required: true
+        schema: { type: integer }
+    post:
+      tags: [BookAuthors]
+      summary: Vincular autor a livro
+      responses:
+        201:
+          description: Vínculo criado
+        409:
+          description: Já vinculado
+    delete:
+      tags: [BookAuthors]
+      summary: Remover vínculo autor/livro
+      responses:
+        204:
+          description: Removido
+        404:
+          description: Vínculo não encontrado

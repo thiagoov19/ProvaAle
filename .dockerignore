@@ -1,0 +1,35 @@
+# Dependências e caches
+node_modules
+npm-debug.log
+*.log
+.cache
+coverage
+
+# Git e metadados locais
+.git
+.gitignore
+.vscode
+.idea
+.DS_Store
+Thumbs.db
+
+# Configurações locais/sensíveis
+.env
+.env.local
+.env.development
+
+# Artefatos acadêmicos/documentação que não precisam entrar na imagem runtime
+evidencias
+modelagem
+justificativa
+queries
+docs
+
+# Documentação (não necessária no container)
+README.md
+SWAGGER_CHECKLIST.md
+COMANDOS_FINAIS.md
+
+# Docker/compose não precisam ser copiados para dentro da imagem
+Dockerfile
+docker-compose.yml
